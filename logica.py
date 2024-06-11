@@ -56,6 +56,16 @@ class AnalisadorDados:
                 status_especies.append("Rara")
 
         return status_especies
+    
+    def Id(self):
+        print("Indice diversidade")
 
+    def Equitabilidade(self):
+        print("Equitabilidade")
+        
+    def IndiceSimilaridade(self):
+        print("Indice de similaridade")
+        
     def obter_dados(self):
         return self.dados
+    
