@@ -79,33 +79,6 @@ class Interface:  # Define a classe Interface
         
     def analise_completa(self):  # Método para mostrar análise completa (a ser implementado)
         self.mostrar_texto_terminal("Mostrar análise completa")  # Mostra uma mensagem indicando que a análise completa será mostrada
-        
-    def gerar_pdf_analise_completa(self, resultado_analise):
-        c = canvas.Canvas("analise_completa.pdf", pagesize=letter)
-        width, height = letter
-
-        # Adiciona o texto da análise completa ao PDF
-        texto = resultado_analise
-        c.drawString(100, height - 100, texto)
-
-        c.save()
-
-    def analise_completa(self):
-        self.analisador.calcular_Hmax()
-        status_especies = self.analisador.calcular_F()
-        similaridades = self.analisador.IndiceSimilaridade()
-
-        # Formata o resultado
-        resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n" + \
-                    "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)]) + \
-                    "\n\nÍndice de Similaridade:\n" + \
-                    "\n".join([f"Similaridade entre linha {i+1} e linha {j+1}: {similaridade:.2f}%" for i, j, similaridade in similaridades])
-
-        # Gera o PDF com a análise completa
-        self.gerar_pdf_analise_completa(resultado)
-
-        # Mostra uma mensagem indicando que o PDF foi gerado
-        self.mostrar_texto_terminal("Análise completa gerada com sucesso. PDF salvo como 'analise_completa.pdf'")    
 
     def voltar_menu_inicial(self):  # Método para voltar ao menu inicial
         self.root.deiconify()  # Mostra a janela principal

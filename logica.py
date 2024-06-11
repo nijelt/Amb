@@ -2,7 +2,9 @@ import pandas as pd  # Importa a biblioteca pandas, utilizada para a leitura de 
 import numpy as np  # Importa a biblioteca numpy, utilizada para operações matemáticas e manipulação de arrays
 import math  # Importa a biblioteca math, utilizada para operações matemáticas, como logaritmos
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
+pdfFile = PdfPages("output.pdf")
 
 class AnalisadorDados:  # Define a classe AnalisadorDados
     def __init__(self):  # Método inicializador da classe
@@ -122,16 +124,17 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
         axs[1, 0].set_title('Equitabilidade')
         axs[1, 0].set_xlabel('Equitabilidade')
         axs[1, 0].set_ylabel('')  # Remova o rótulo do eixo Y
-
+        
     # Índice de Diversidade (ainda não implementado)
         axs[1, 1].bar([], [])
         axs[1, 1].set_title('Índice de Diversidade')
         axs[1, 1].set_xlabel('Índice de Diversidade')
         axs[1, 1].set_ylabel('')  # Remova o rótulo do eixo Y
-
+        pdfFile.savefig(fig)
+        
         plt.tight_layout()
         plt.show()
-
+        pdfFile.close()
         
     def obter_dados(self):  # Método para obter os dados carregados
         return self.dados  # Retorna os dados 
