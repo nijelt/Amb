@@ -1,6 +1,8 @@
 import pandas as pd  # Importa a biblioteca pandas, utilizada para a leitura de arquivos CSV
 import numpy as np  # Importa a biblioteca numpy, utilizada para operações matemáticas e manipulação de arrays
 import math  # Importa a biblioteca math, utilizada para operações matemáticas, como logaritmos
+import matplotlib.pyplot as plt
+
 
 class AnalisadorDados:  # Define a classe AnalisadorDados
     def __init__(self):  # Método inicializador da classe
@@ -11,22 +13,26 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
         if arquivo_path.endswith('.txt'):  # Verifica se o arquivo é um .txt
             self.dados = np.loadtxt(arquivo_path, skiprows=1, usecols=range(2, 13))  # Carrega o arquivo .txt ignorando a primeira linha e selecionando as colunas de 2 a 12
         elif arquivo_path.endswith('.csv'):  # Verifica se o arquivo é um .csv
-            self.dados = pd.read_csv(arquivo_path, index_col=0)  # Carrega o arquivo .csv utilizando a primeira coluna como índice
+            self.dados = pd.read_csv(arquivo_path, index_col=0)
+            self.dados = self.dados.apply(pd.to_numeric)# Carrega o arquivo .csv utilizando a primeira coluna como índice
         else:  # Se o arquivo não for .txt ou .csv
             return False  # Retorna False
         return True  # Retorna True se o arquivo foi carregado com sucesso
+
 
     def calcular_Hmax(self):  # Método para calcular o Hmax
         self.Hi = []  # Reseta a lista de Hmax
         if isinstance(self.dados, np.ndarray):  # Verifica se os dados são um array numpy
             for linha in self.dados:  # Itera sobre cada linha dos dados
                 S = np.count_nonzero(linha)  # Conta o número de elementos diferentes de zero na linha
-                H_max = math.log2(S) if S > 0 else 0  # Calcula Hmax usando logaritmo base 2 de S, se S for maior que 0
+                H_max = math.log2(S) if S > 0 else 0 # Calcula Hmax usando logaritmo base 2 de S, se S for maior que 0
+                H_max = round(H_max, 3)
                 self.Hi.append(H_max)  # Adiciona o Hmax calculado à lista Hi
         elif isinstance(self.dados, pd.DataFrame):  # Verifica se os dados são um DataFrame do pandas
             for _, linha in self.dados.iterrows():  # Itera sobre cada linha dos dados
                 S = np.count_nonzero(linha)  # Conta o número de elementos diferentes de zero na linha
                 H_max = math.log2(S) if S > 0 else 0  # Calcula Hmax usando logaritmo base 2 de S, se S for maior que 0
+                H_max = round(H_max, 3)
                 self.Hi.append(H_max)  # Adiciona o Hmax calculado à lista Hi
 
     def calcular_F(self):  # Método para calcular a frequência relativa de ocorrência
@@ -56,13 +62,76 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
         return status_especies  # Retorna a lista de status das espécies
     
     def Id(self):  # Método para calcular o índice de diversidade (a ser implementado)
-        print("Indice diversidade")  # Imprime "Indice diversidade"
+        IDA = np.array
+        return IDA
 
     def Equitabilidade(self):  # Método para calcular a equitabilidade (a ser implementado)
         print("Equitabilidade")  # Imprime "Equitabilidade"
         
-    def IndiceSimilaridade(self):  # Método para calcular o índice de similaridade (a ser implementado)
-        print("Indice de similaridade")  # Imprime "Indice de similaridade"
+    def Equitabilidade(self):  # Método para calcular a equitabilidade (a ser implementado)
+        print("Equitabilidade")  # Imprime "Equitabilidade"
+ 
+    def IndiceSimilaridade(self):  # Método para calcular o índice de similaridade de Sørensen
+        similaridades = []  # Lista para armazenar os resultados das similaridades
+        
+        if isinstance(self.dados, pd.DataFrame):  # Converte DataFrame para numpy array se necessário
+            matriz_dados = self.dados.to_numpy()
+        else:
+            matriz_dados = self.dados
+
+        num_linhas = matriz_dados.shape[0]
+
+        for i in range(num_linhas):
+            for j in range(i + 1, num_linhas):
+                linha1 = matriz_dados[i]
+                linha2 = matriz_dados[j]
+                
+                c = np.count_nonzero(np.logical_and(linha1 > 0, linha2 > 0))  # Número de espécies comuns
+                a = np.count_nonzero(linha1 > 0)  # Número de espécies na comunidade A
+                b = np.count_nonzero(linha2 > 0)  # Número de espécies na comunidade B
+
+                if a + b == 0:
+                    similaridade = 0.0  # Evita divisão por zero se ambas as linhas forem vazias
+                else:
+                    similaridade = (2 * c) / (a + b) * 100  # Calcula o índice de Sørensen e multiplica por 100
+
+                similaridades.append((i + 1, j + 1, similaridade))
+
+        return similaridades  
+   
+    def plotar_grafico(self):
+        fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+
+    # Gráfico de Hmax por Ponto
+        axs[0, 0].bar(range(1, len(self.Hi) + 1), self.Hi, color='skyblue', alpha=0.7)
+        axs[0, 0].set_title('Gráfico de Hmax por Ponto')
+        axs[0, 0].set_xlabel('Pontos')
+        axs[0, 0].set_ylabel('Hmax')
+        axs[0, 0].set_ylim(0, max(self.Hi) + 0.5)  # Ajuste do limite superior do eixo Y para garantir que todos os valores sejam visíveis
+
+    # Status das Espécies
+        status_especies = self.calcular_F()
+        status_counts = pd.Series(status_especies).value_counts()
+        axs[0, 1].bar(status_counts.index, status_counts.values, color='lightgreen', alpha=0.7)
+        axs[0, 1].set_title('Status das Espécies')
+        axs[0, 1].set_xlabel('Status')
+        axs[0, 1].set_ylabel('Contagem')
+
+    # Equitabilidade (ainda não implementado)
+        axs[1, 0].bar([], [])
+        axs[1, 0].set_title('Equitabilidade')
+        axs[1, 0].set_xlabel('Equitabilidade')
+        axs[1, 0].set_ylabel('')  # Remova o rótulo do eixo Y
+
+    # Índice de Diversidade (ainda não implementado)
+        axs[1, 1].bar([], [])
+        axs[1, 1].set_title('Índice de Diversidade')
+        axs[1, 1].set_xlabel('Índice de Diversidade')
+        axs[1, 1].set_ylabel('')  # Remova o rótulo do eixo Y
+
+        plt.tight_layout()
+        plt.show()
+
         
     def obter_dados(self):  # Método para obter os dados carregados
         return self.dados  # Retorna os dados

@@ -44,7 +44,7 @@ class Interface:  # Define a classe Interface
         for texto, comando in botoes:
             Botao(self.root_secundario, texto, comando)
 
-        self.root_secundario.protocol("WM_DELETE_WINDOW", self.fechar_secundario)  # Define a ação ao fechar a janela
+        self.root_secundario.protocol("Fechar", self.fechar_secundario)  # Define a ação ao fechar a janela
         self.root_secundario.mainloop()  # Inicia o loop principal da janela secundária
 
     def mostrar_texto_terminal(self, texto):  # Método para mostrar texto em uma nova janela
@@ -60,13 +60,21 @@ class Interface:  # Define a classe Interface
     def mostrar_texto(self):  # Método para calcular e mostrar Hmax e o status das espécies
         self.analisador.calcular_Hmax()  # Calcula Hmax
         status_especies = self.analisador.calcular_F()  # Calcula o status das espécies
+        similaridades = self.analisador.IndiceSimilaridade()
         # Formata o resultado
-        resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n" + "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)])
+        resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n" + \
+                    "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)]) + \
+                    "\n\nÍndice de Similaridade:\n" + \
+                    "\n".join([f"Similaridade entre linha {i+1} e linha {j+1}: {similaridade:.2f}%" for i, j, similaridade in similaridades])
+                    
+        #resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n" + "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)])
         self.mostrar_texto_terminal(resultado)  # Mostra o resultado em uma nova janela
 
     def mostrar_grafico(self):  # Método para mostrar gráfico (a ser implementado)
-        self.mostrar_texto_terminal("Mostrar gráfico")  # Mostra uma mensagem indicando que o gráfico será mostrado
-
+        self.analisador.calcular_F()
+        self.analisador.calcular_Hmax()
+        self.analisador.plotar_grafico()
+        
     def analise_completa(self):  # Método para mostrar análise completa (a ser implementado)
         self.mostrar_texto_terminal("Mostrar análise completa")  # Mostra uma mensagem indicando que a análise completa será mostrada
 
