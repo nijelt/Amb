@@ -114,7 +114,7 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
         status_counts = pd.Series(status_especies).value_counts()
         axs[0, 1].bar(status_counts.index, status_counts.values, color='lightgreen', alpha=0.7)
         axs[0, 1].set_title('Status das Espécies')
-        axs[0, 1].set_xlabel('Status')
+        axs[0, 1].set_xlabel("Classificação")
         axs[0, 1].set_ylabel('Contagem')
 
     # Equitabilidade (ainda não implementado)
@@ -134,4 +134,5 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
 
         
     def obter_dados(self):  # Método para obter os dados carregados
-        return self.dados  # Retorna os dados
+        return self.dados  # Retorna os dados 
+    
