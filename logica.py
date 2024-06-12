@@ -4,66 +4,57 @@ import math  # Importa a biblioteca math, utilizada para operações matemática
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-pdfFile = PdfPages("output.pdf")
+pdfFile = PdfPages("output.pdf") #inicia o pdf
 
-class AnalisadorDados:  # Define a classe AnalisadorDados
+class AnalisadorDados:  # Define a classe AnalisadorDados (como se fosse uma biblioteca)
     def __init__(self):  # Método inicializador da classe
         self.dados = None  # Atributo para armazenar os dados
-        self.Hi = []  # Atributo para armazenar os valores de Hmax
-
-    def selecionar_arquivo(self, arquivo_path):  # Método para selecionar e carregar um arquivo de dados
+        
+    def selecionar_arquivo(self, arquivo_path):  # Método para selecionar e carregar um arquivo de dados/arquivo_path esta na interface
         if arquivo_path.endswith('.txt'):  # Verifica se o arquivo é um .txt
             self.dados = np.loadtxt(arquivo_path, skiprows=1, usecols=range(2, 13))  # Carrega o arquivo .txt ignorando a primeira linha e selecionando as colunas de 2 a 12
+            self.rotulos = np.loadtxt(arquivo_path, dtype=str, max_rows=1, usecols=range(1,12)) #carrega a primeira linha do arquivo como rotulos        
         elif arquivo_path.endswith('.csv'):  # Verifica se o arquivo é um .csv
             self.dados = pd.read_csv(arquivo_path, index_col=0)
             self.dados = self.dados.apply(pd.to_numeric)# Carrega o arquivo .csv utilizando a primeira coluna como índice
+            self.rotulos = pd.read_csv(arquivo_path, header=None, usecols=range(1, 12)).iloc[0].values.astype(str)
+            #le a primeira linha, ignorando a primeira coluna. iloc[0] significa que ele acha a primeira linha do dataframe
         else:  # Se o arquivo não for .txt ou .csv
             return False  # Retorna False
         return True  # Retorna True se o arquivo foi carregado com sucesso
 
-
     def calcular_Hmax(self):  # Método para calcular o Hmax
-        self.Hi = []  # Reseta a lista de Hmax
+        self.HMax = []  # Reseta a lista de Hmax
         if isinstance(self.dados, np.ndarray):  # Verifica se os dados são um array numpy
             for linha in self.dados:  # Itera sobre cada linha dos dados
                 S = np.count_nonzero(linha)  # Conta o número de elementos diferentes de zero na linha
                 H_max = math.log2(S) if S > 0 else 0 # Calcula Hmax usando logaritmo base 2 de S, se S for maior que 0
-                H_max = round(H_max, 3)
-                self.Hi.append(H_max)  # Adiciona o Hmax calculado à lista Hi
+                H_max = round(H_max,3)
+                self.HMax.append(H_max)  # Adiciona o Hmax calculado à lista Hi
         elif isinstance(self.dados, pd.DataFrame):  # Verifica se os dados são um DataFrame do pandas
             for _, linha in self.dados.iterrows():  # Itera sobre cada linha dos dados
                 S = np.count_nonzero(linha)  # Conta o número de elementos diferentes de zero na linha
                 H_max = math.log2(S) if S > 0 else 0  # Calcula Hmax usando logaritmo base 2 de S, se S for maior que 0
-                H_max = round(H_max, 3)
-                self.Hi.append(H_max)  # Adiciona o Hmax calculado à lista Hi
-        return self.Hi
+                H_max = round(H_max,3)
+                self.HMax.append(H_max)  # Adiciona o Hmax calculado à lista Hi
+        return self.HMax
+    
+    
 
     def calcular_F(self):  # Método para calcular a frequência relativa de ocorrência
-        status_especies = []  # Lista para armazenar o status das espécies
-
         if isinstance(self.dados, np.ndarray):  # Verifica se os dados são um array numpy
             freq = np.count_nonzero(self.dados, axis=0)  # Conta o número de valores diferentes de zero em cada coluna
             P = np.shape(self.dados)[0]  # Obtém o número total de amostras (número de linhas)
-            ocorre = (freq / P) * 100  # Calcula a frequência relativa de ocorrência
+            ocorrencia = (freq / P) * 100  # Calcula a frequência relativa de ocorrência
 
         elif isinstance(self.dados, pd.DataFrame):  # Verifica se os dados são um DataFrame do pandas
             freq = self.dados.astype(bool).sum(axis=0)  # Conta o número de valores diferentes de zero em cada coluna
             P = self.dados.shape[0]  # Obtém o número total de amostras (número de linhas)
-            ocorre = (freq / P) * 100  # Calcula a frequência relativa de ocorrência
-
+            ocorrencia = (freq / P) * 100  # Calcula a frequência relativa de ocorrência
         else:  # Se os dados não forem nem numpy array nem DataFrame
             return []  # Retorna uma lista vazia
 
-        for ocorrencia in ocorre:  # Itera sobre as frequências de ocorrência
-            if ocorrencia >= 50:  # Se a frequência for maior ou igual a 50%
-                status_especies.append("Constante")  # Adiciona "Constante" à lista de status
-            elif 10 <= ocorrencia < 50:  # Se a frequência estiver entre 10% e 50%
-                status_especies.append("Comum")  # Adiciona "Comum" à lista de status
-            else:  # Se a frequência for menor que 10%
-                status_especies.append("Rara")  # Adiciona "Rara" à lista de status
-
-        return status_especies  # Retorna a lista de status das espécies
-    
+        return ocorrencia  # Retorna a lista de status das espécies
                                  
     def IndiceSimilaridade(self):  # Método para calcular o índice de similaridade de Sørensen
         similaridades = []  # Lista para armazenar os resultados das similaridades
@@ -105,7 +96,7 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
                 for ni in linha: 
                     if ni > 0: #itera sobre os valores, ignorando os zeros
                         soma += ni * math.log10(ni) 
-                H = (3.3219 * math.log10(N)) - ((1 / N) * soma)
+                H = 3.3219 *  (math.log10(N) - (1 / N) * soma)
                 indices_diversidade.append(H)
         elif isinstance(self.dados, pd.DataFrame): #teste para verificar se é um dataframe (csv)
             for _, linha in self.dados.iterrows(): 
@@ -144,42 +135,70 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
               
    
     def plotar_grafico(self):
-        fig, axs = plt.subplots(2, 2, figsize=(15, 10)) 
-
-    # Gráfico de Hmax por Ponto
-        axs[0, 0].bar(range(1, len(self.Hi) + 1), self.Hi, color='skyblue', alpha=0.7)
-        axs[0, 0].set_title('Gráfico de Hmax por Ponto')
-        axs[0, 0].set_xlabel('Pontos')
-        axs[0, 0].set_ylabel('Hmax')
-        axs[0, 0].set_ylim(0, max(self.Hi) + 0.5)  # Ajuste do limite superior do eixo Y para garantir que todos os valores sejam visíveis
-
-    # Status das Espécies
+        # Calcula os valores
+        HMax = self.HMax  # Exemplo de valores de HMax
+        equitabilidade = self.Equitabilidade()  # Exemplo de valores de equitabilidade
+        indices_diversidade = self.calcular_indice_diversidade()  # Exemplo de valores de índice de diversidade
         status_especies = self.calcular_F()
-        status_counts = pd.Series(status_especies).value_counts()
-        axs[0, 1].bar(status_counts.index, status_counts.values, color='lightgreen', alpha=0.7)
-        axs[0, 1].set_title('Status das Espécies')
-        axs[0, 1].set_xlabel("Classificação")
-        axs[0, 1].set_ylabel('Contagem')
-
-    # Equitabilidade (ainda não implementado)
-        equitabilidade = self.Equitabilidade()
-        axs[1, 0].bar(range(1,len(equitabilidade) + 1), equitabilidade, color = 'red',alpha=0.7)
-        axs[1, 0].set_title('Equitabilidade')
-        axs[1, 0].set_xlabel('Equitabilidade')
-        axs[1, 0].set_ylabel('')  # Remova o rótulo do eixo Y
+        rotulo_indices = self.rotulos
+        similaridades = self.IndiceSimilaridade()
         
-    # Índice de Diversidade (ainda não implementado)
-        indices_diversidade = self.calcular_indice_diversidade()
-        axs[1, 1].bar(range(1,len(indices_diversidade) + 1), indices_diversidade, color ='purple', alpha=0.7)
-        axs[1, 1].set_title('Índice de Diversidade')
-        axs[1, 1].set_xlabel('Pontos')
-        axs[1, 1].set_ylabel('')  # Remova o rótulo do eixo Y
+        # Número de pontos
+        n_points = len(HMax)
 
+        # Configura os índices das barras
+        indices = np.arange(n_points)
+
+        # Largura das barras
+        bar_width = 0.25
+
+        # Cria a figura e os eixos
+        fig, axs = plt.subplots(1, 3, figsize=(15, 7))
+
+        # Gráfico de Hmax, Equitabilidade e Índice de Diversidade por Ponto
+        bars1 = axs[0].bar(indices, HMax, bar_width, label='HMax', color='skyblue', alpha=0.7)
+        bars2 = axs[0].bar(indices + bar_width, equitabilidade, bar_width, label='Equitabilidade', color='red', alpha=0.7)
+        bars3 = axs[0].bar(indices + 2 * bar_width, indices_diversidade, bar_width, label='Índice de Diversidade', color='purple', alpha=0.7)
+
+        # Títulos e Rótulos do primeiro gráfico
+        axs[0].set_title('HMax, Equitabilidade e Índice de Diversidade por Ponto', fontsize=12)
+        axs[0].set_xlabel('Pontos', fontsize=10)
+        axs[0].set_ylabel('Valores', fontsize=10)
+        axs[0].set_xticks(indices + bar_width)
+        axs[0].set_xticklabels(range(1, n_points + 1), fontsize=10)
+        axs[0].legend(fontsize=10)
+        axs[0].grid(True, which='both', linestyle='--', linewidth=0.5, color='grey', alpha=0.7)
+
+        # Gráfico de Frequência de Ocorrência (usando a porcentagem de ocorrência)
+        rotulo_indices = np.arange(len(status_especies))
+        bars4 = axs[1].bar(rotulo_indices, status_especies, color='lightgreen', alpha=0.7)
+
+        # Títulos e Rótulos do segundo gráfico
+        axs[1].set_title('Frequência de ocorrência', fontsize=12)
+        axs[1].set_xlabel('Espécies', fontsize=10)
+        axs[1].set_ylabel('Frequência de Ocorrência (%)', fontsize=10)
+        axs[1].set_xticks(rotulo_indices)
+        axs[1].set_xticklabels(self.rotulos, rotation=45, ha='right', fontsize=10)
+        axs[1].grid(True, which='both', linestyle='--', linewidth=0.5, color='grey', alpha=0.7)
+        
+         # Gráfico de Índice de Similaridade
+        indices_sim = np.arange(len(similaridades))
+        similaridades_valores = [sim[2] for sim in similaridades]
+        bars5 = axs[2].bar(indices_sim, similaridades_valores, color='gold', alpha=0.7)
+
+        # Títulos e Rótulos do terceiro gráfico
+        axs[2].set_title('Índice de Similaridade', fontsize=12)
+        axs[2].set_xlabel('Pares de Linhas', fontsize=10)
+        axs[2].set_ylabel('Índice de Similaridade (%)', fontsize=10)
+        axs[2].set_xticks(indices_sim)
+        axs[2].set_xticklabels(['{}-{}'.format(sim[0], sim[1]) for sim in similaridades], rotation=45, ha='right', fontsize=10)
+        axs[2].grid(True, which='both', linestyle='--', linewidth=0.5, color='grey', alpha=0.7)
+                
         pdfFile.savefig(fig)
-        
+        pdfFile.close()
+        # Ajusta layout e exibe o gráfico
         plt.tight_layout()
         plt.show()
-        pdfFile.close()
         
     def obter_dados(self):  # Método para obter os dados carregados
         return self.dados  # Retorna os dados

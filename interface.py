@@ -1,8 +1,7 @@
 import customtkinter as ctk  # Importa a biblioteca customtkinter para criar interfaces gráficas customizáveis
 from tkinter import filedialog  # Importa a biblioteca filedialog do tkinter para manipulação de diálogos de arquivos
 from logica import AnalisadorDados  # Importa a classe AnalisadorDados do módulo logica
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+
 
 class Interface:  # Define a classe Interface
     def __init__(self):  # Método inicializador da classe
@@ -66,17 +65,18 @@ class Interface:  # Define a classe Interface
         indice_diversidade = self.analisador.calcular_indice_diversidade()
         
         # Formata o resultado
-        resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n"  + \
-            "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)]) + \
+        resultado = f"Hmax:\n" + \
+            "\n".join([f"Ponto {i+1}: {hmax}" for i, hmax in enumerate(self.analisador.HMax)]) + \
+            "\n\nStatus das espécies:\n" + \
+            "\n".join([f"{self.analisador.rotulos[i]}: {status:.2f}%" for i, status in enumerate(status_especies)]) + \
             "\n\nÍndice de Similaridade:\n" + \
-            "\n".join([f"Similaridade entre linha {i} e linha {j}: {similaridade:.2f}%" for i, j, similaridade in similaridades]) + \
+            "\n".join([f"Similaridade linha {i} e linha {j}: {similaridade:.2f}%" for i, j, similaridade in similaridades]) + \
             "\n\nÍndice de Diversidade:\n" + \
             "\n".join([f"Indice de diversidade ponto {i+1}: {indice_diversidade:.3f}" for i, indice_diversidade in enumerate(indice_diversidade)]) + \
             "\n\nEquitabilidade:\n" + \
             "\n".join([f"Equitabilidade ponto {i+1}: {equitabilidade:.3f}" for i, equitabilidade in enumerate(equitabilidades)])
 
-        self.mostrar_texto_terminal(resultado)  # Mostra o resultado em uma nova janela
-
+        self.mostrar_texto_terminal(resultado)
 
     def mostrar_grafico(self):  # Método para mostrar gráfico (a ser implementado)
         self.analisador.calcular_F()
@@ -113,3 +113,6 @@ class Botao:  # Classe para criar botões
     def __init__(self, root, texto, comando):  # Método inicializador da classe
         self.botao = ctk.CTkButton(root, text=texto, command=comando)  # Cria um botão com o texto e comando fornecidos
         self.botao.pack(pady=10)  # Adiciona o botão à janela com espaçamento vertical
+
+interface = Interface()
+interface.criar_menu_inicial()
