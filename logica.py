@@ -36,6 +36,7 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
                 H_max = math.log2(S) if S > 0 else 0  # Calcula Hmax usando logaritmo base 2 de S, se S for maior que 0
                 H_max = round(H_max, 3)
                 self.Hi.append(H_max)  # Adiciona o Hmax calculado à lista Hi
+        return self.Hi
 
     def calcular_F(self):  # Método para calcular a frequência relativa de ocorrência
         status_especies = []  # Lista para armazenar o status das espécies
@@ -63,24 +64,18 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
 
         return status_especies  # Retorna a lista de status das espécies
     
-
-    def Equitabilidade(self):  # Método para calcular a equitabilidade (a ser implementado)
-        print("Equitabilidade")  # Imprime "Equitabilidade"
-        
-    def Equitabilidade(self):  # Método para calcular a equitabilidade (a ser implementado)
-        print("Equitabilidade")  # Imprime "Equitabilidade"
- 
+                                 
     def IndiceSimilaridade(self):  # Método para calcular o índice de similaridade de Sørensen
         similaridades = []  # Lista para armazenar os resultados das similaridades
         
         if isinstance(self.dados, pd.DataFrame):  # Converte DataFrame para numpy array se necessário
-            matriz_dados = self.dados.to_numpy()
+            matriz_dados = self.dados.to_numpy() 
         else:
             matriz_dados = self.dados
 
-        num_linhas = matriz_dados.shape[0]
+        num_linhas = matriz_dados.shape[0] #calcula o numero de linhas da matriz
 
-        for i in range(num_linhas):
+        for i in range(num_linhas): #itera até chegar ao fim das linhas
             for j in range(i + 1, num_linhas):
                 linha1 = matriz_dados[i]
                 linha2 = matriz_dados[j]
@@ -98,22 +93,22 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
 
         return similaridades  
     
-    def calcular_indice_diversidade(self):
+    def calcular_indice_diversidade(self): #começo do calculo de diversidade
         indices_diversidade = []
-        if isinstance(self.dados, np.ndarray):
+        if isinstance(self.dados, np.ndarray): #teste para verificar se um array numpy
             for linha in self.dados:
-                N = np.sum(linha)
-                if N == 0:
+                N = np.sum(linha) #soma todos os valores da linha
+                if N == 0: #caso haja uma linha composta por zeros o programa ignora ela e não calcula o ni 
                     indices_diversidade.append(0)
                     continue
                 soma = 0
-                for ni in linha:
-                    if ni > 0:
-                        soma += ni * math.log10(ni)
+                for ni in linha: 
+                    if ni > 0: #itera sobre os valores, ignorando os zeros
+                        soma += ni * math.log10(ni) 
                 H = (3.3219 * math.log10(N)) - ((1 / N) * soma)
                 indices_diversidade.append(H)
-        elif isinstance(self.dados, pd.DataFrame):
-            for _, linha in self.dados.iterrows():
+        elif isinstance(self.dados, pd.DataFrame): #teste para verificar se é um dataframe (csv)
+            for _, linha in self.dados.iterrows(): 
                 N = np.sum(linha)
                 if N == 0:
                     indices_diversidade.append(0)
@@ -125,9 +120,31 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
                 H = (3.3219 * math.log10(N)) - ((1 / N) * soma)
                 indices_diversidade.append(H)
         return indices_diversidade
+    
+    def Equitabilidade(self):
+        diversidade = self.calcular_indice_diversidade()  # Calcula os índices de diversidade
+        Hmaximo = self.calcular_Hmax()  # Calcula o Hmax
+
+        if diversidade is None or Hmaximo is None:
+            return []  # Retorna uma lista vazia se um dos valores for None
+
+        equitabilidades = []  # Lista para armazenar os valores de equitabilidade
+
+        if isinstance(self.dados, np.ndarray):
+            for indice_diversidade, hmax in zip(diversidade, Hmaximo):
+                if hmax != 0:  # Evita a divisão por zero
+                    E = indice_diversidade / hmax  # Calcula a equitabilidade
+                    equitabilidades.append(E)  # Adiciona o valor de equitabilidade à lista
+        elif isinstance(self.dados, pd.DataFrame):  # Se os dados forem um DataFrame do pandas
+            for indice_diversidade, hmax in zip(diversidade, Hmaximo):
+                if hmax != 0:  # Evita a divisão por zero
+                    E = indice_diversidade / hmax  # Calcula a equitabilidade
+                    equitabilidades.append(E)  # Adiciona o valor de equitabilidade à lista
+        return equitabilidades  # Retorna a lista de equitabilidades
+              
    
     def plotar_grafico(self):
-        fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+        fig, axs = plt.subplots(2, 2, figsize=(15, 10)) 
 
     # Gráfico de Hmax por Ponto
         axs[0, 0].bar(range(1, len(self.Hi) + 1), self.Hi, color='skyblue', alpha=0.7)
@@ -145,7 +162,8 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
         axs[0, 1].set_ylabel('Contagem')
 
     # Equitabilidade (ainda não implementado)
-        axs[1, 0].bar([], [])
+        equitabilidade = self.Equitabilidade()
+        axs[1, 0].bar(range(1,len(equitabilidade) + 1), equitabilidade, color = 'red',alpha=0.7)
         axs[1, 0].set_title('Equitabilidade')
         axs[1, 0].set_xlabel('Equitabilidade')
         axs[1, 0].set_ylabel('')  # Remova o rótulo do eixo Y

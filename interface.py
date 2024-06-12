@@ -62,17 +62,21 @@ class Interface:  # Define a classe Interface
         self.analisador.calcular_Hmax()  # Calcula Hmax
         status_especies = self.analisador.calcular_F()  # Calcula o status das espécies
         similaridades = self.analisador.IndiceSimilaridade()
+        equitabilidades = self.analisador.Equitabilidade()
         indice_diversidade = self.analisador.calcular_indice_diversidade()
         
         # Formata o resultado
         resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n"  + \
-                    "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)]) + \
-                    "\n\nÍndice de Similaridade:\n" + \
-                    "\n".join([f"Similaridade entre linha {i} e linha {j}: {similaridade:.2f}%" for i, j, similaridade in similaridades]) + "\n\n" + \
-                    "\n\n".join([f"Indice de diversidade ponto {i+1}: {indice_diversidade:.3f}" for i, indice_diversidade in enumerate(indice_diversidade) ])
-                    
-        #resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n" + "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)])
+            "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)]) + \
+            "\n\nÍndice de Similaridade:\n" + \
+            "\n".join([f"Similaridade entre linha {i} e linha {j}: {similaridade:.2f}%" for i, j, similaridade in similaridades]) + \
+            "\n\nÍndice de Diversidade:\n" + \
+            "\n".join([f"Indice de diversidade ponto {i+1}: {indice_diversidade:.3f}" for i, indice_diversidade in enumerate(indice_diversidade)]) + \
+            "\n\nEquitabilidade:\n" + \
+            "\n".join([f"Equitabilidade ponto {i+1}: {equitabilidade:.3f}" for i, equitabilidade in enumerate(equitabilidades)])
+
         self.mostrar_texto_terminal(resultado)  # Mostra o resultado em uma nova janela
+
 
     def mostrar_grafico(self):  # Método para mostrar gráfico (a ser implementado)
         self.analisador.calcular_F()
