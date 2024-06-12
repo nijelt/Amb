@@ -63,9 +63,6 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
 
         return status_especies  # Retorna a lista de status das espécies
     
-    def Id(self):  # Método para calcular o índice de diversidade (a ser implementado)
-        IDA = np.array
-        return IDA
 
     def Equitabilidade(self):  # Método para calcular a equitabilidade (a ser implementado)
         print("Equitabilidade")  # Imprime "Equitabilidade"
@@ -100,6 +97,34 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
                 similaridades.append((i + 1, j + 1, similaridade))
 
         return similaridades  
+    
+    def calcular_indice_diversidade(self):
+        indices_diversidade = []
+        if isinstance(self.dados, np.ndarray):
+            for linha in self.dados:
+                N = np.sum(linha)
+                if N == 0:
+                    indices_diversidade.append(0)
+                    continue
+                soma = 0
+                for ni in linha:
+                    if ni > 0:
+                        soma += ni * math.log10(ni)
+                H = (3.3219 * math.log10(N)) - ((1 / N) * soma)
+                indices_diversidade.append(H)
+        elif isinstance(self.dados, pd.DataFrame):
+            for _, linha in self.dados.iterrows():
+                N = np.sum(linha)
+                if N == 0:
+                    indices_diversidade.append(0)
+                    continue
+                soma = 0
+                for ni in linha:
+                    if ni > 0:
+                        soma += ni * math.log10(ni)
+                H = (3.3219 * math.log10(N)) - ((1 / N) * soma)
+                indices_diversidade.append(H)
+        return indices_diversidade
    
     def plotar_grafico(self):
         fig, axs = plt.subplots(2, 2, figsize=(15, 10))
@@ -126,10 +151,12 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
         axs[1, 0].set_ylabel('')  # Remova o rótulo do eixo Y
         
     # Índice de Diversidade (ainda não implementado)
-        axs[1, 1].bar([], [])
+        indices_diversidade = self.calcular_indice_diversidade()
+        axs[1, 1].bar(range(1,len(indices_diversidade) + 1), indices_diversidade, color ='purple', alpha=0.7)
         axs[1, 1].set_title('Índice de Diversidade')
-        axs[1, 1].set_xlabel('Índice de Diversidade')
+        axs[1, 1].set_xlabel('Pontos')
         axs[1, 1].set_ylabel('')  # Remova o rótulo do eixo Y
+
         pdfFile.savefig(fig)
         
         plt.tight_layout()
@@ -137,5 +164,4 @@ class AnalisadorDados:  # Define a classe AnalisadorDados
         pdfFile.close()
         
     def obter_dados(self):  # Método para obter os dados carregados
-        return self.dados  # Retorna os dados 
-    
+        return self.dados  # Retorna os dados

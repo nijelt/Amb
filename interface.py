@@ -31,13 +31,12 @@ class Interface:  # Define a classe Interface
         
         self.root_secundario = ctk.CTk()  # Cria uma nova janela secundária
         self.root_secundario.title("Menu Secundário")  # Define o título da janela
-        self.root_secundario.geometry("300x300")  # Define o tamanho da janela
+        self.root_secundario.geometry("350x200")  # Define o tamanho da janela
 
         # Lista de botões e seus comandos correspondentes
         botoes = [
             ("Texto", self.mostrar_texto),
             ("Gráfico", self.mostrar_grafico),
-            ("Análise Completa", self.analise_completa),
             ("Voltar", self.voltar_menu_inicial),
             ("Fechar", self.fechar)
         ]
@@ -63,11 +62,14 @@ class Interface:  # Define a classe Interface
         self.analisador.calcular_Hmax()  # Calcula Hmax
         status_especies = self.analisador.calcular_F()  # Calcula o status das espécies
         similaridades = self.analisador.IndiceSimilaridade()
+        indice_diversidade = self.analisador.calcular_indice_diversidade()
+        
         # Formata o resultado
-        resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n" + \
+        resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n"  + \
                     "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)]) + \
                     "\n\nÍndice de Similaridade:\n" + \
-                    "\n".join([f"Similaridade entre linha {i+1} e linha {j+1}: {similaridade:.2f}%" for i, j, similaridade in similaridades])
+                    "\n".join([f"Similaridade entre linha {i} e linha {j}: {similaridade:.2f}%" for i, j, similaridade in similaridades]) + "\n\n" + \
+                    "\n\n".join([f"Indice de diversidade ponto {i+1}: {indice_diversidade:.3f}" for i, indice_diversidade in enumerate(indice_diversidade) ])
                     
         #resultado = f"Hmax = {self.analisador.Hi}\n\nStatus das espécies:\n" + "\n".join([f"Espécie {i+1}: {status}" for i, status in enumerate(status_especies)])
         self.mostrar_texto_terminal(resultado)  # Mostra o resultado em uma nova janela
@@ -75,10 +77,8 @@ class Interface:  # Define a classe Interface
     def mostrar_grafico(self):  # Método para mostrar gráfico (a ser implementado)
         self.analisador.calcular_F()
         self.analisador.calcular_Hmax()
+        self.analisador.calcular_indice_diversidade()
         self.analisador.plotar_grafico()
-        
-    def analise_completa(self):  # Método para mostrar análise completa (a ser implementado)
-        self.mostrar_texto_terminal("Mostrar análise completa")  # Mostra uma mensagem indicando que a análise completa será mostrada
 
     def voltar_menu_inicial(self):  # Método para voltar ao menu inicial
         self.root.deiconify()  # Mostra a janela principal
