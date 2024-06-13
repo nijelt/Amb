@@ -175,4 +175,3 @@ class AnalisadorDados:
         plt.tight_layout()
         plt.show()
         
-    
